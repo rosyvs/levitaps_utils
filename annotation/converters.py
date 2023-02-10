@@ -6,7 +6,7 @@ import pandas as pd
 # functions to convert between different transcript/annotation formats
 
 # useful generic format is a table with
-# [uttID, speaker, utterance, start_sec, end_sec]
+# [uttID, speaker, trasncript, start_sec, end_sec]
 
 # separate function to write to csv, tsv or ELAN compatible (ELAN interprets ALL commas as delimiter)
 
@@ -58,7 +58,27 @@ def docx_scraped_tsv_to_table(ooona_file):
     # table = pd.read_csv(ooona_file, sep='\t')
 
 def molly_xlsx_to_table(xl_file):
-    pass
+    # contractor transcribers provide an xlsx with the following columns
+    # utt_ix:	int
+    # Timecode: "HH:MM:SS:ss - HH:MM:SS:ss"	
+    # Duration:	HH:MM:SS:ss 
+    # Speaker:	str
+    # Dialogue:	str 
+    # Annotations:	blank
+    # Error Type: blank
+    with pd.ExcelFile(xl_file) as xls:
+        sheetname = xls.sheet_names
+        table = pd.DataFrame(pd.read_excel(xls, sheetname[0], index_col=0))
+    table[['start_time','end_time']] = table['Timecode'].str.split(' - ',expand=True)
+    table['start_sec'] = table['start_time'].apply(HHMMSS_to_sec)
+    table['end_sec'] = table['end_time'].apply(HHMMSS_to_sec)
+    table.drop(labels=['Annotations','Error Type','Duration'], axis=1, inplace=True)
+    table=table[['Speaker','Dialogue','start_sec','end_sec']]
+    table.rename({'Speaker':'speaker', 'Dialogue':'transcript'})
+    table.index.names=['index']
+    # table.set_index('#')
+
+    return table
 
 def saga_to_table(saga_txt):
     # saga's own transcripts are txt given in the following format
