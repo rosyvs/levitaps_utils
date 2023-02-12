@@ -52,8 +52,8 @@ def docx_scraped_tsv_to_table(ooona_file):
             utt_ix, start_time, end_time, speaker, transcript = line
             start_sec = HHMMSS_to_sec(start_time)
             end_sec = HHMMSS_to_sec(end_time)
-            rows.append([speaker,transcript,start_sec,end_sec])
-    utt_table = pd.DataFrame(rows, columns=['speaker','transcript','start_sec','end_sec'])
+            rows.append([utt_ix,speaker,transcript,start_sec,end_sec])
+    utt_table = pd.DataFrame(rows, columns=['uttID','speaker','transcript','start_sec','end_sec'])
     return(utt_table)
     # table = pd.read_csv(ooona_file, sep='\t')
 
@@ -68,15 +68,13 @@ def molly_xlsx_to_table(xl_file):
     # Error Type: blank
     with pd.ExcelFile(xl_file) as xls:
         sheetname = xls.sheet_names
-        table = pd.DataFrame(pd.read_excel(xls, sheetname[0], index_col=0))
+        table = pd.DataFrame(pd.read_excel(xls, sheetname[0]))
     table[['start_time','end_time']] = table['Timecode'].str.split(' - ',expand=True)
     table['start_sec'] = table['start_time'].apply(HHMMSS_to_sec)
     table['end_sec'] = table['end_time'].apply(HHMMSS_to_sec)
     table.drop(labels=['Annotations','Error Type','Duration'], axis=1, inplace=True)
-    table=table[['Speaker','Dialogue','start_sec','end_sec']]
-    table.rename({'Speaker':'speaker', 'Dialogue':'transcript'})
-    table.index.names=['index']
-    # table.set_index('#')
+    table=table[['#','Speaker','Dialogue','start_sec','end_sec']]
+    table.rename(columns={'#':'uttID','Speaker':'speaker', 'Dialogue':'transcript'}, inplace=True)
 
     return table
 
@@ -112,10 +110,10 @@ def saga_to_table(saga_txt):
             if count%3 == 1:
                 transcript = line[0]
             if count%3 == 2:
-                rows.append([speaker,transcript,start_sec,None])
+                rows.append([i,speaker,transcript,start_sec,None])
                 #print([speaker,transcript,timestamp])
             count+=1
-    utt_table = pd.DataFrame(rows, columns=['speaker','transcript','start_sec','end_sec'])
+    utt_table = pd.DataFrame(rows, columns=['uttID','speaker','transcript','start_sec','end_sec'])
     return(utt_table)
 
 def table_to_ELAN_tsv(table:pd.DataFrame, path:str):
@@ -127,4 +125,11 @@ def table_to_standard_csv(table:pd.DataFrame, path:str):
 
     # TODO: convert times in seconds back to HH:MM:SS? 
     # TODO: split utterances into sentences? 
-    pass
+    table.to_csv(path,index=False, float_format='%.3f')
+
+def table_to_utt_labels_csv(table:pd.DataFrame, path:str):
+    # write table to utt_labels csv format comaptable w rosy's isatasr lib
+    table.drop('uttID', axis=1, inplace=True)
+    table.rename(columns={'transcript':'utterance'}, inplace=True)
+    table.to_csv(path,index=False, float_format='%.3f')
+    
