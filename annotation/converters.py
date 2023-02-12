@@ -12,6 +12,8 @@ import pandas as pd
 
 def HHMMSS_to_sec(time_str):
     """Get Seconds from timestamp string with milliseconds."""
+    if not time_str:
+        return None
     if time_str.count(':')==2:
         h, m, s = time_str.split(':')
     elif time_str.count(':')==3:
@@ -69,9 +71,9 @@ def molly_xlsx_to_table(xl_file):
     with pd.ExcelFile(xl_file) as xls:
         sheetname = xls.sheet_names
         table = pd.DataFrame(pd.read_excel(xls, sheetname[0]))
-    table[['start_time','end_time']] = table['Timecode'].str.split(' - ',expand=True)
-    table['start_sec'] = table['start_time'].apply(HHMMSS_to_sec)
-    table['end_sec'] = table['end_time'].apply(HHMMSS_to_sec)
+    table[['start_time','end_time']] = table['Timecode'].str.split('-',expand=True)
+    table['start_sec'] = table['start_time'].str.strip().apply(HHMMSS_to_sec)
+    table['end_sec'] = table['end_time'].str.strip().apply(HHMMSS_to_sec)
     table.drop(labels=['Annotations','Error Type','Duration'], axis=1, inplace=True)
     table=table[['#','Speaker','Dialogue','start_sec','end_sec']]
     table.rename(columns={'#':'uttID','Speaker':'speaker', 'Dialogue':'transcript'}, inplace=True)

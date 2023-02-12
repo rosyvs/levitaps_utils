@@ -31,9 +31,10 @@ def make_SessionID_map(path=DEFAULT_MAP_PATH):
 
 def rename_files_SID_to_FN(path, recursive=True, overwrite=False):
     SID_to_FN, _=make_SessionID_map()
-
+    #TODO: deal with matching nested sIDs, see commented code below
+    newpaths=[]
     for sID in SID_to_FN.keys():
-        srclist = glob.glob(os.path.join(path,'**', f'*{sID}.*'), recursive=True)
+        srclist = glob.glob(os.path.join(path,'**', f'*{sID}.*'), recursive=recursive)
         # print(f'siD: {sID}')
         # print(srclist)
         for srcpath in srclist:
@@ -43,7 +44,8 @@ def rename_files_SID_to_FN(path, recursive=True, overwrite=False):
                 shutil.move(srcpath, newpath)
             else:
                 shutil.copy(srcpath, newpath)
-
+            newpaths.append(newpath)
+    return newpaths
 
 
     # # get sessnames
