@@ -6,7 +6,7 @@ import pandas as pd
 # functions to convert between different transcript/annotation formats
 
 # useful generic format is a table with
-# [uttID, speaker, trasncript, start_sec, end_sec]
+# [uttID, speaker, transcript, start_sec, end_sec]
 
 # separate function to write to csv, tsv or ELAN compatible (ELAN interprets ALL commas as delimiter)
 
