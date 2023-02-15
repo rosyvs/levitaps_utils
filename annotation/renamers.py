@@ -10,7 +10,7 @@ global DEFAULT_MAP_PATH
 DEFAULT_MAP_PATH = '../../SessionIDs_from_catalog.csv'
 
 def make_SessionID_map(path=DEFAULT_MAP_PATH):
-    """generate dictionary from csv file with columns for filename and session ID - 
+    """generate dictionary from csv file with columns for File_Name and Session_ID - 
     copied from columsn 1 & 2 of the Catalog on OneDrive
     """
     SID_to_FN={}

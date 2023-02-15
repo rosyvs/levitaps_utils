@@ -2,7 +2,7 @@ import os
 import csv
 import re
 import pandas as pd
-
+from pathlib import Path
 # functions to convert between different transcript/annotation formats
 
 # useful generic format is a table with
@@ -39,6 +39,15 @@ def HHMMSS_to_sec(time_str):
         print(f'input string format not supported: {time_str}')
         return None
     return int(h) * 3600 + int(m) * 60 + float(s) 
+
+def sec_to_timecode(time_sec):
+    # convert seconds to HH:MM:SS:hundredths as used in .xlsx transcripts
+    h=int(time_sec//3600)
+    m=int((time_sec-3600*h)//60)
+    s=int(time_sec-3600*h-60*m)
+    u=round(100*(time_sec-3600*h-60*m-s))
+    timecode=f'{h}:{m:02}:{s:02}:{u:02}'
+    return(timecode)
 
 def docx_scraped_tsv_to_table(ooona_file):
     # ooona output is a table in a word docx, 
@@ -120,7 +129,7 @@ def saga_to_table(saga_txt):
 
 def table_to_ELAN_tsv(table:pd.DataFrame, path:str):
     # write table to tsv compatible with ELAN import
-    table.to_csv(path, sep='\t')
+    table.to_csv(path, index=False, float_format='%.3f',sep='\t')
 
 def table_to_standard_csv(table:pd.DataFrame, path:str):
     # write table to standard csv format agreed upon by whole team
@@ -135,3 +144,15 @@ def table_to_utt_labels_csv(table:pd.DataFrame, path:str):
     table.rename(columns={'transcript':'utterance'}, inplace=True)
     table.to_csv(path,index=False, float_format='%.3f')
     
+def table_to_molly_xlsx(tbl:pd.DataFrame,path:str):
+    tblx = tbl
+    tblx.rename(columns={'uttID':'#', 'speaker':'Speaker','transcript':'Dialogue'}, inplace=True)
+    tblx['dur_s'] = tblx['end_sec']-tblx['start_sec']
+    tblx['start_timecode']=tblx['start_sec'].apply(sec_to_timecode)
+    tblx['end_timecode']=tblx['end_sec'].apply(sec_to_timecode)
+    tblx['Duration'] = tblx['dur_s'].apply(sec_to_timecode)
+    tblx['Timecode'] = [' - '.join(i) for i in zip(tblx['start_timecode'], tblx['end_timecode'])]
+    tblx['Annotations'] = ''
+    tblx['Error Type'] = ''
+    tblx=tblx[['#','Timecode','Duration','Speaker','Dialogue','Annotations','Error Type']]    
+    tblx.to_excel(path,sheet_name=Path(path).stem, index=False)
