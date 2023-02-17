@@ -22,7 +22,7 @@ def make_SessionID_map(path=DEFAULT_MAP_PATH):
 
         for line in reader:
             filename,sessionID=line
-            filename=filename.split('.')[0]
+            filename=filename.split('.')[0] # remove extension
             if (len(filename.strip())>0 and len(sessionID.strip())>0): 
                 SID_to_FN[sessionID]=filename
                 FN_to_SID[filename]=sessionID

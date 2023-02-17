@@ -15,7 +15,6 @@ SID_to_FN, FN_to_SID=make_SessionID_map()
 
 extract_timings_csv='/Users/roso8920/Dropbox (Emotive Computing)/LEVI/5min_HiFi/sample_timings.csv'
 
-# TODO: replace with shared source dir here  /Users/roso8920/Library/CloudStorage/OneDrive-SharedLibraries-UCB-O365/Jennifer K Jacobs - CSVs
 # transcript_xlsx_path = '/Users/roso8920/Dropbox (Emotive Computing)/LEVI/human_transcripts/molly_transcripts/xlsx'
 transcript_xlsx_path = '/Users/roso8920/Library/CloudStorage/OneDrive-SharedLibraries-UCB-O365/Jennifer K Jacobs - Transcribed'
 out_dir = '/Users/roso8920/Library/CloudStorage/OneDrive-UCB-O365/LEVI/5min_HiFi/media/'
@@ -25,7 +24,7 @@ convert_to=False
 sample_len_s = 300
 suffix='_5min'
 
-# ### option 1: assume correct paths are alrady given in extract_timings_csv:
+# ### option 1: assume full, correct paths are alrady given in extract_timings_csv:
 # trim_media_batch(extract_timings_csv,
 #                     out_dir, 
 #                     suffix='_5min', 
@@ -37,27 +36,32 @@ suffix='_5min'
 # we will add the appropriate path, end time, and convert between Session_ID and FileName as needed
 
 # location of session directories where full length files reside
-sess_root_dir = '/Users/roso8920/Library/CloudStorage/OneDrive-UCB-O365/LEVI/media/'
+media_root_dir = '/Users/roso8920/Library/CloudStorage/OneDrive-UCB-O365/LEVI/media/'
+# Note: if OneDrive, you may have to force local storage - below code won't trigger fetch from the cloud
 
-with open(extract_timings_csv,'r') as f:
+with open(extract_timings_csv,'r', encoding='utf-8-sig') as f:
     reader = csv.reader(f)
     for row in reader:
+        if not any(x.strip() for x in row): 
+            continue
         if len(row)==2:
             media_in, start = row
             start_sec=HHMMSS_to_sec(start)
-            end_sec = start_sec+ sample_len_s
         elif len(row)==3:
             media_in, start, end = row
             start_sec=HHMMSS_to_sec(start)
             end_sec=HHMMSS_to_sec(end)
+        end_sec = start_sec+ sample_len_s
+
         media_type = Path(media_in).suffix
-        media_name = Path(media_in).stem
+        media_name = Path(media_in).stem.partition('.')[0]
         
-        # converts to SID if poss otherwise just keep media name
+        # converts to SID if poss otherwise just keep media name 
         SID=FN_to_SID.get(media_name,media_name)
-        print(f'Session_ID: {SID}')
-        media_path = os.path.expanduser(os.path.join(sess_root_dir,f'{media_name}{media_type}'))
-        print(f'...Input media path: {media_path}')
+        print(f'\nSession_ID: {SID}')
+
+        media_path = os.path.expanduser(os.path.join(media_root_dir,f'{media_name}{media_type}'))
+        # print(f'...Input media path: {media_path}')
 
         if convert_to=='wav':
             ext = '.wav'
