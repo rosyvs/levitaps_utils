@@ -18,7 +18,7 @@ def make_SessionID_map(path=DEFAULT_MAP_PATH):
     with open(path,encoding='utf-8-sig') as f:
         reader = csv.reader(f)
         headers = next(reader)
-        assert (headers[0]=='File_Name') & (headers[1]=='Session_ID'), "Headers are wrong, expected 'File_Name' and 'Session_ID'"
+        assert (headers[0]=='File_Name' or headers[0]=='Conference_ID') & (headers[1]=='Session_ID'), "Headers are wrong, expected ('File_Name' or 'Conference_ID') and 'Session_ID'"
 
         for line in reader:
             filename,sessionID=line

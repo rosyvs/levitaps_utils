@@ -10,7 +10,11 @@ from annotation.trimmers import trim_media_batch, trim_media
 from annotation.converters import HHMMSS_to_sec, molly_xlsx_to_table, table_to_ELAN_tsv
 from annotation.renamers import rename_files_FN_to_SID, rename_files_SID_to_FN, make_SessionID_map
 
-# TODO call the renameers functions to convert FileNames and SessionID to match between media and transcript
+# initialise file name mapper: 
+# make_SessionID_map() takes a csv file with columns for File_Name and Session_ID 
+# (if none given, defaultst to '../../SessionIDs_from_catalog.csv')
+# you can copy columns 1 & 2 of the Catalog on OneDrive
+# and save as a csv, and pass the path to the csv below
 SID_to_FN, FN_to_SID=make_SessionID_map()
 
 extract_timings_csv='/Users/roso8920/Dropbox (Emotive Computing)/LEVI/5min_HiFi/sample_timings.csv'
